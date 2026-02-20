@@ -11,7 +11,7 @@ NOME_MODELO = 'models/gemini-2.5-flash'
 # Cache para não precisar carregar o Whisper toda vez que apertar o botão
 @st.cache_resource
 def carregar_whisper():
-    return whisper.load_model("base")
+    return whisper.load_model("tiny")
 
 # --- INTERFACE WEB ---
 st.title("🎙️ Analisador de Chamadas com IA")
@@ -95,3 +95,4 @@ if arquivo_audio is not None:
             except Exception as e:
 
                 st.error(f"Ops! Ocorreu um erro: {e}")
+
