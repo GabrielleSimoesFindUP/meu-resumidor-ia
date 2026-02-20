@@ -53,21 +53,30 @@ if arquivo_audio is not None:
                 model_g = genai.GenerativeModel(NOME_MODELO)
                 
                 prompt = f"""
-                Você é um analista de qualidade de Call Center.
-                Analise a transcrição abaixo. Cada linha possui o tempo em segundos [Início - Fim].
-                Duração total: {tempo_formatado} ({tempo_total} segundos).
+                Você é um Analista de Qualidade Sênior do Service Desk da FindUP, responsável por auditar os atendimentos prestados ao cliente Leo Madeiras.
+                Analise a transcrição de áudio abaixo com rigor técnico. Cada linha possui o tempo em segundos [Início - Fim].
+                Duração total da chamada: {tempo_formatado} ({tempo_total} segundos).
 
-                Forneça um relatório detalhado:
-                1. **Motivo da Ligação:** Do que se trata?
-                2. **Principais Tópicos:** O que foi discutido?
-                3. **Satisfação/Sentimento:** O cliente parece satisfeito, frustrado ou neutro?
-                4. **Desfecho:** Qual foi a conclusão?
-                5. **Duração (Métricas):**
-                   - Tempo de espera na fila?
-                   - Tempo de atendimento humano?
-                   - Tempo total: {tempo_formatado}
+                Forneça um relatório detalhado, estruturado e direto ao ponto com os seguintes tópicos:
 
-                Transcrição:
+                1. **Contexto da Ligação:** Qual foi o problema, dúvida ou solicitação relatada pelo usuário da Leo Madeiras?
+                
+                2. **Registro (Ticket):** O analista repassou algum número de chamado, incidente, requisição, ticket ou protocolo para o usuário? 
+                   - Se SIM, informe o número exato em negrito. 
+                   - Se NÃO, escreva explicitamente: "Nenhum número de chamado foi repassado na gravação".
+                
+                3. **Termômetro de Sentimento do Cliente:** O cliente demonstrou estar Satisfeito, Neutro ou Frustrado/Irritado? 
+                   - Identifique ativamente se o cliente usou palavras de alerta como: "demora", "muito tempo", "esperando", "atendimento ruim", "péssimo", "inaceitável", "absurdo", "urgente", "estou parado", "de novo", "ninguém resolve", "prejuízo", "loja cheia", "travado" ou similares.
+                   - Justifique a sua escolha citando trechos ou o tom geral da conversa.
+                
+                4. **Desfecho da Chamada:** Como o atendimento foi finalizado? O problema foi resolvido em linha (First Call Resolution) ou foi escalonado/encaminhado para outra equipe?
+                
+                5. **Métricas de Tempo:**
+                   - Tempo estimado na URA/Fila de espera:
+                   - Tempo estimado de conversa com o analista humano:
+                   - Tempo total da gravação: {tempo_formatado}
+
+                Transcrição da chamada:
                 {transcricao_com_tempo}
                 """
                 
@@ -84,4 +93,5 @@ if arquivo_audio is not None:
                 os.remove(caminho_temp)
                 
             except Exception as e:
+
                 st.error(f"Ops! Ocorreu um erro: {e}")
