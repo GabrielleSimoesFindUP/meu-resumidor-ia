@@ -13,7 +13,7 @@ genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
 NOME_MODELO = 'models/gemini-2.5-flash'
 
 # 🛑 COLE O ID DA SUA PASTA DO DRIVE AQUI:
-ID_DA_PASTA = "COLE_O_ID_DA_PASTA_AQUI"
+ID_DA_PASTA = "1nCR3mW_pL57XGIX4R2N6NzrMv6ljK_ce"
 
 # --- FUNÇÕES DO GOOGLE DRIVE ---
 @st.cache_resource
@@ -102,3 +102,4 @@ try:
 
 except Exception as e:
     st.error(f"Erro de conexão com o Drive: {e}")
+
