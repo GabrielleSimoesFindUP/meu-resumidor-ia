@@ -111,15 +111,15 @@ try:
                         prompt = """
                         Você é um Analista de Qualidade Sênior do Service Desk de TI da FindUP. Você audita chamados técnicos das lojas "Leo Madeiras".
                         
-                        🚨 CONTEXTO VITAL: A FindUP resolve problemas de TECNOLOGIA (sistemas fora do ar, PDV travado, impressora, internet, senhas). O usuário da loja pode citar rotinas de vendas (carnê, pallets, mercadoria), mas o seu foco é descobrir QUAL É O PROBLEMA DE TI que o analista precisa resolver.
-                        🚨 ALERTA DE ÁUDIO RUIM: O áudio tem uma URA alta e a voz do analista humano está EXTREMAMENTE BAIXA. O cliente fala mais alto. Faça o máximo de esforço para entender o problema técnico relatado pelo cliente, mesmo que o analista esteja inaudível.
+                        🚨 REGRA ABSOLUTA DE INÍCIO DE CHAMADA: A ligação REAL SÓ COMEÇA quando você ouvir a frase exata: "Leo madeiras...". TUDO antes dessa frase é tempo de espera da URA (mesmo que a voz da URA pareça humana dizendo "Aguarde ser atendido"). 
+                        O atendimento humano só inicia na palavra "Leo madeiras". A voz do analista que fala isso estará MUITO BAIXA.
 
-                        1. **⏱️ Início do Atendimento:** Cite a ÚLTIMA frase da URA, e informe o tempo EXATO (ex: 02:15) em que o humano começa a falar.
-                        2. **🧑‍💻 Analista Responsável:** A saudação é "Leo madeiras, [NOME DO ANALISTA], boa tarde". O analista fala baixo. Se for impossível ouvir, escreva APENAS: "Não identificado devido ao áudio baixo".
-                        3. **📝 Contexto da Ligação (Problema de TI):** Qual é a falha TÉCNICA ou de SISTEMA que a loja está enfrentando? Ignore a parte de logística/produtos e foque no problema de TI.
+                        1. **⏱️ Início do Atendimento:** Avance o áudio ignorando todas as repetições de "aguarde". Encontre o momento EXATO em que a palavra "Leo madeiras" é dita pela primeira vez por uma voz humana muito baixa. Informe essa minutagem exata (ex: 03:45). Se você não ouvir "Leo madeiras", a ligação é apenas abandono na fila.
+                        2. **🧑‍💻 Analista Responsável:** Imediatamente após falar "Leo madeiras", o analista vai dizer o nome dele (geralmente duas vezes). Escreva esse nome. Se inaudível devido ao áudio baixo, escreva: "Não identificado".
+                        3. **📝 Contexto da Ligação (Problema de TI):** Qual é a falha TÉCNICA ou de SISTEMA (PDV, impressora, internet, senha) que a loja está enfrentando? O cliente pode falar termos de loja (carnê, pallet), mas o seu foco é o problema do sistema de TI.
                         4. **🎫 Registro (Ticket):** O analista repassou algum número de chamado? Se sim, coloque em negrito.
-                        5. **🌡️ Termômetro de Sentimento:** O cliente estava Satisfeito, Neutro ou Frustrado/Irritado com a falha do sistema?
-                        6. **✅ Desfecho da Chamada:** O problema de TI foi resolvido na hora (FCR) ou precisou ser escalonado? Se o áudio cortar para a pesquisa de satisfação antes do fim, informe isso.
+                        5. **🌡️ Termômetro de Sentimento:** O cliente estava Satisfeito, Neutro ou Frustrado/Irritado com a falha?
+                        6. **✅ Desfecho da Chamada:** O problema de TI foi resolvido na hora (FCR) ou precisou ser escalonado?
                         """
                         
                         model = genai.GenerativeModel(NOME_MODELO)
@@ -141,6 +141,7 @@ try:
 
 except Exception as e:
     st.error(f"Erro no sistema: {e}")
+
 
 
 
