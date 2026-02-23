@@ -10,7 +10,8 @@ from googleapiclient.http import MediaIoBaseDownload
 
 # --- CONFIGURAÇÕES GERAIS ---
 genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
-NOME_MODELO = 'models/gemini-2.5-flash'
+# Usando o modelo PRO para ter a audição máxima em áudios difíceis e baixos:
+NOME_MODELO = 'models/gemini-1.5-pro'
 
 # 🛑 O ID DA SUA PASTA DO DRIVE:
 ID_DA_PASTA = "1nCR3mW_pL57XGIX4R2N6NzrMv6ljK_ce"
@@ -104,14 +105,14 @@ try:
                         
                         st.audio(conteudo_audio, format=f"audio/{extensao.replace('.', '')}")
                             
-                    with st.spinner("🧠 A IA está ouvindo a ligação..."):
+                    with st.spinner("🧠 A IA está ouvindo a ligação (Modelo PRO)..."):
                         audio_enviado = genai.upload_file(path=caminho_temp)
                         
-                       prompt = """
+                        prompt = """
                         Você é um Analista de Qualidade Sênior do Service Desk da FindUP, focado no cliente Leo Madeiras.
                         Ouça a gravação anexada com extremo rigor técnico e forneça um relatório estruturado.
                         
-                        🚨 ALERTA CRÍTICO DE AUDIÇÃO: A gravação possui um longo tempo de espera na URA ("Sua chamada é a número..."). O analista humano VAI falar depois da URA, mas a voz dele pode estar MUITO BAIXA em comparação com a música. Você DEVE ouvir o áudio inteiro até o último segundo e focar ao máximo para captar a voz humana, ignorando a repetição da URA.
+                        🚨 ALERTA CRÍTICO DE AUDIÇÃO: A gravação possui um longo tempo de espera na URA. O analista humano VAI falar depois da URA, mas a voz dele pode estar MUITO BAIXA em comparação com a música. Você DEVE ouvir o áudio inteiro até o último segundo e focar ao máximo para captar a voz humana, ignorando a repetição da URA.
 
                         REGRAS DE OURO: 
                         1. Nunca invente ou suponha informações. 
@@ -132,7 +133,7 @@ try:
                             relatorio_final = response.text
                         except ValueError:
                             motivo = response.candidates[0].finish_reason if response.candidates else "Desconhecido"
-                            relatorio_final = f"⚠️ **A IA não conseguiu gerar o texto para este áudio.**\n\nIsso geralmente acontece se o áudio estiver completamente mudo, corrompido, ou se a IA bloqueou a transcrição por conter dados muito sensíveis (Filtro de Segurança). Código do bloqueio: {motivo}"
+                            relatorio_final = f"⚠️ **A IA não conseguiu gerar o texto para este áudio.**\n\nIsso geralmente acontece se o áudio estiver corrompido ou bloqueado por filtros de segurança. Código: {motivo}"
                         
                         genai.delete_file(audio_enviado.name)
                         os.remove(caminho_temp)
@@ -144,5 +145,3 @@ try:
 
 except Exception as e:
     st.error(f"Erro no sistema: {e}")
-
-
