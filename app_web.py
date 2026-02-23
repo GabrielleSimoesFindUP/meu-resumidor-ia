@@ -12,11 +12,11 @@ from googleapiclient.http import MediaIoBaseDownload
 
 # --- CONFIGURAÇÕES GERAIS ---
 genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
-NOME_MODELO = 'models/gemini-2.5-flash'
+NOME_MODELO = 'models/gemini-2.5-flash-lite'
 
 # 🛑 IDs DO GOOGLE (Não esqueça de preencher a planilha!):
 ID_DA_PASTA = "1nCR3mW_pL57XGIX4R2N6NzrMv6ljK_ce"
-ID_DA_PLANILHA = "COLE_O_ID_DA_PLANILHA_AQUI" # <--- PREENCHA SEU ID AQUI!
+ID_DA_PLANILHA = "1mjtN76sLF861TRKjOYel3mtyTO18xUrzLzxJsSb8_ic" # <--- PREENCHA SEU ID AQUI!
 
 # --- FUNÇÕES DO GOOGLE (DRIVE E SHEETS) ---
 @st.cache_resource
@@ -178,3 +178,4 @@ try:
 
 except Exception as e:
     st.error(f"Erro no sistema: {e}")
+
