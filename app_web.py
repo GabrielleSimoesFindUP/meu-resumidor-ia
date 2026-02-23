@@ -178,5 +178,9 @@ try:
 except Exception as e:
     st.error(f"Erro no sistema: {e}")
 
+except Exception as e:
+    import traceback
+    st.error("🚨 Erro Crítico no sistema:")
+    st.code(traceback.format_exc())
 
 
