@@ -109,21 +109,17 @@ try:
                         audio_enviado = genai.upload_file(path=caminho_temp)
                         
                         prompt = """
-                        Você é um Analista de Qualidade Sênior do Service Desk da FindUP, focado no cliente Leo Madeiras.
-                        Ouça a gravação anexada com extremo rigor técnico e forneça um relatório estruturado.
+                        Você é um Analista de Qualidade Sênior do Service Desk de TI da FindUP. Você audita chamados técnicos das lojas "Leo Madeiras".
                         
-                        🚨 ALERTA CRÍTICO DE AUDIÇÃO: A gravação possui um longo tempo de espera na URA. O analista humano VAI falar depois da URA, mas a voz dele pode estar MUITO BAIXA em comparação com a música. Você DEVE ouvir o áudio inteiro e focar ao máximo para captar a voz humana.
+                        🚨 CONTEXTO VITAL: A FindUP resolve problemas de TECNOLOGIA (sistemas fora do ar, PDV travado, impressora, internet, senhas). O usuário da loja pode citar rotinas de vendas (carnê, pallets, mercadoria), mas o seu foco é descobrir QUAL É O PROBLEMA DE TI que o analista precisa resolver.
+                        🚨 ALERTA DE ÁUDIO RUIM: O áudio tem uma URA alta e a voz do analista humano está EXTREMAMENTE BAIXA. O cliente fala mais alto. Faça o máximo de esforço para entender o problema técnico relatado pelo cliente, mesmo que o analista esteja inaudível.
 
-                        REGRAS DE OURO: 
-                        1. Nunca invente ou suponha informações. 
-                        2. Procure ativamente pela voz baixa do analista após a URA.
-
-                        1. **⏱️ Início do Atendimento:** Para não errar o tempo, faça o seguinte: cite qual foi a ÚLTIMA frase da URA, e logo em seguida informe o tempo EXATO (minutos e segundos, ex: 02:15) em que o analista humano começou a falar.
-                        2. **🧑‍💻 Analista Responsável:** Identifique o nome do atendente. O roteiro é "Leo madeiras, [NOME DO ANALISTA], bom dia/boa tarde". Ele fala o nome duas vezes. Extraia o nome da voz baixa. Se inaudível, escreva: "Não identificado".
-                        3. **📝 Contexto da Ligação:** Qual foi o problema, dúvida ou solicitação do usuário?
-                        4. **🎫 Registro (Ticket):** O analista repassou algum número de chamado ou incidente? Se sim, coloque em negrito.
-                        5. **🌡️ Termômetro de Sentimento:** O cliente estava Satisfeito, Neutro ou Frustrado/Irritado? Justifique.
-                        6. **✅ Desfecho da Chamada:** Como foi finalizado? Resolvido em linha (FCR) ou escalonado?
+                        1. **⏱️ Início do Atendimento:** Cite a ÚLTIMA frase da URA, e informe o tempo EXATO (ex: 02:15) em que o humano começa a falar.
+                        2. **🧑‍💻 Analista Responsável:** A saudação é "Leo madeiras, [NOME DO ANALISTA], boa tarde". O analista fala baixo. Se for impossível ouvir, escreva APENAS: "Não identificado devido ao áudio baixo".
+                        3. **📝 Contexto da Ligação (Problema de TI):** Qual é a falha TÉCNICA ou de SISTEMA que a loja está enfrentando? Ignore a parte de logística/produtos e foque no problema de TI.
+                        4. **🎫 Registro (Ticket):** O analista repassou algum número de chamado? Se sim, coloque em negrito.
+                        5. **🌡️ Termômetro de Sentimento:** O cliente estava Satisfeito, Neutro ou Frustrado/Irritado com a falha do sistema?
+                        6. **✅ Desfecho da Chamada:** O problema de TI foi resolvido na hora (FCR) ou precisou ser escalonado? Se o áudio cortar para a pesquisa de satisfação antes do fim, informe isso.
                         """
                         
                         model = genai.GenerativeModel(NOME_MODELO)
@@ -145,6 +141,7 @@ try:
 
 except Exception as e:
     st.error(f"Erro no sistema: {e}")
+
 
 
 
