@@ -19,7 +19,6 @@ ID_DA_PASTA = "1nCR3mW_pL57XGIX4R2N6NzrMv6ljK_ce"
 ID_DA_PLANILHA = "1mjtN76sLF861TRKjOYel3mtyTO18xUrzLzxJsSb8_ic" # <--- PREENCHA SEU ID AQUI!
 
 # --- FUNÇÕES DO GOOGLE (DRIVE E SHEETS) ---
-@st.cache_resource
 def conectar_drive():
     cred_json = st.secrets["GOOGLE_CREDENTIALS_JSON"]
     cred_dict = json.loads(cred_json)
@@ -178,4 +177,5 @@ try:
 
 except Exception as e:
     st.error(f"Erro no sistema: {e}")
+
 
