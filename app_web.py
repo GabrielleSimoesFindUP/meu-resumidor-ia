@@ -1,9 +1,11 @@
-streamlit
-google-generativeai
-google-api-python-client
-google-auth-httplib2
-google-auth-oauthlib
-gspread
+import streamlit as st
+import google.generativeai as genai
+import os
+import tempfile
+import json
+import io
+import datetime
+import gspread
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseDownload
@@ -14,7 +16,7 @@ NOME_MODELO = 'models/gemini-2.5-flash'
 
 # 🛑 IDs DO GOOGLE (Não esqueça de preencher a planilha!):
 ID_DA_PASTA = "1nCR3mW_pL57XGIX4R2N6NzrMv6ljK_ce"
-ID_DA_PLANILHA = "1mjtN76sLF861TRKjOYel3mtyTO18xUrzLzxJsSb8_ic" # <--- PREENCHA SEU ID AQUI!
+ID_DA_PLANILHA = "COLE_O_ID_DA_PLANILHA_AQUI" # <--- PREENCHA SEU ID AQUI!
 
 # --- FUNÇÕES DO GOOGLE (DRIVE E SHEETS) ---
 @st.cache_resource
@@ -176,5 +178,3 @@ try:
 
 except Exception as e:
     st.error(f"Erro no sistema: {e}")
-
-
