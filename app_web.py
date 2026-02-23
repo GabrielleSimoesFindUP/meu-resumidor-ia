@@ -26,11 +26,39 @@ def conectar_drive():
     )
     return build('drive', 'v3', credentials=creds)
 
-def listar_arquivos_drive(service):
-    # Procura apenas arquivos de áudio dentro da pasta especificada
-    query = f"'{ID_DA_PASTA}' in parents and trashed=false and mimeType contains 'audio/'"
-    resultados = service.files().list(q=query, fields="files(id, name)").execute()
-    return resultados.get('files', [])
+def listar_arquivos_drive(service, folder_id):
+    arquivos_audio = []
+    extensoes_permitidas = ('.mp3', '.wav', '.m4a', '.ogg')
+    
+    # Busca tudo (arquivos e pastas) dentro da pasta atual
+    query = f"'{folder_id}' in parents and trashed=false"
+    
+    # O loop 'while' garante que ele leia tudo, mesmo se tiver centenas de arquivos
+    page_token = None
+    while True:
+        resultados = service.files().list(
+            q=query, 
+            fields="nextPageToken, files(id, name, mimeType)",
+            pageToken=page_token
+        ).execute()
+        
+        itens = resultados.get('files', [])
+        
+        for item in itens:
+            # Se o item for uma PASTA, o robô "entra" nela (recursão)
+            if item['mimeType'] == 'application/vnd.google-apps.folder':
+                # Ele junta os áudios da subpasta com os que já encontrou
+                arquivos_audio.extend(listar_arquivos_drive(service, item['id']))
+            else:
+                # Se for um arquivo normal, verifica se é áudio
+                if item['name'].lower().endswith(extensoes_permitidas):
+                    arquivos_audio.append(item)
+                    
+        page_token = resultados.get('nextPageToken', None)
+        if page_token is None:
+            break
+            
+    return arquivos_audio
 
 def baixar_audio_drive(service, file_id):
     request = service.files().get_media(fileId=file_id)
@@ -49,7 +77,7 @@ st.write("Selecione uma ligação diretamente do seu Google Drive para análise.
 try:
     # Conecta no Drive e lista os arquivos
     service = conectar_drive()
-    arquivos = listar_arquivos_drive(service)
+    arquivos = listar_arquivos_drive(service, ID_DA_PASTA)
     
     if not arquivos:
         st.warning("Nenhum arquivo de áudio encontrado na pasta do Drive.")
@@ -102,4 +130,5 @@ try:
 
 except Exception as e:
     st.error(f"Erro de conexão com o Drive: {e}")
+
 
