@@ -1,11 +1,9 @@
-import streamlit as st
-import google.generativeai as genai
-import os
-import tempfile
-import json
-import io
-import datetime
-import gspread
+streamlit
+google-generativeai
+google-api-python-client
+google-auth-httplib2
+google-auth-oauthlib
+gspread
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseDownload
@@ -178,4 +176,5 @@ try:
 
 except Exception as e:
     st.error(f"Erro no sistema: {e}")
+
 
