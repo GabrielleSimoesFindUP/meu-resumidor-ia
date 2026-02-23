@@ -12,7 +12,7 @@ from googleapiclient.http import MediaIoBaseDownload
 genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
 NOME_MODELO = 'models/gemini-2.5-flash'
 
-# 🛑 COLE O ID DA SUA PASTA DO DRIVE AQUI:
+# 🛑 O ID DA SUA PASTA DO DRIVE (JÁ PREENCHIDO):
 ID_DA_PASTA = "1nCR3mW_pL57XGIX4R2N6NzrMv6ljK_ce"
 
 # --- FUNÇÕES DO GOOGLE DRIVE ---
@@ -33,7 +33,6 @@ def listar_arquivos_drive(service, folder_id):
     # Busca tudo (arquivos e pastas) dentro da pasta atual
     query = f"'{folder_id}' in parents and trashed=false"
     
-    # O loop 'while' garante que ele leia tudo, mesmo se tiver centenas de arquivos
     page_token = None
     while True:
         resultados = service.files().list(
@@ -45,12 +44,11 @@ def listar_arquivos_drive(service, folder_id):
         itens = resultados.get('files', [])
         
         for item in itens:
-            # Se o item for uma PASTA, o robô "entra" nela (recursão)
+            # Se for PASTA, entra nela (recursão)
             if item['mimeType'] == 'application/vnd.google-apps.folder':
-                # Ele junta os áudios da subpasta com os que já encontrou
                 arquivos_audio.extend(listar_arquivos_drive(service, item['id']))
             else:
-                # Se for um arquivo normal, verifica se é áudio
+                # Se for ARQUIVO, verifica se é áudio
                 if item['name'].lower().endswith(extensoes_permitidas):
                     arquivos_audio.append(item)
                     
@@ -71,6 +69,7 @@ def baixar_audio_drive(service, file_id):
     return fh.read()
 
 # --- INTERFACE WEB ---
+st.set_page_config(layout="wide") # Deixa a página mais larga para caber o Dashboard
 st.title("☁️ Auditoria Automática - FindUP")
 st.write("Selecione uma ligação diretamente do seu Google Drive para análise.")
 
@@ -86,9 +85,9 @@ try:
         opcoes = {arq['name']: arq['id'] for arq in arquivos}
         nome_selecionado = st.selectbox("Selecione a gravação (Leo Madeiras):", ["-- Escolha uma gravação --"] + list(opcoes.keys()))
 
-if nome_selecionado != "-- Escolha uma gravação --":
+        if nome_selecionado != "-- Escolha uma gravação --":
             
-            # Divide a tela em duas colunas com larguras iguais
+            # Divide a tela em duas colunas
             coluna_esquerda, coluna_direita = st.columns(2)
             
             with coluna_esquerda:
@@ -142,9 +141,6 @@ if nome_selecionado != "-- Escolha uma gravação --":
                     st.markdown("### 📋 Ficha de Monitoria (QA)")
                     st.markdown(response.text)
 
-
+# O bendito "except" que tinha sumido:
 except Exception as e:
-    st.error(f"Erro de conexão com o Drive: {e}")
-
-
-
+    st.error(f"Erro no sistema: {e}")
