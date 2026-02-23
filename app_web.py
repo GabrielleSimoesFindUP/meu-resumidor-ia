@@ -107,21 +107,31 @@ try:
                     with st.spinner("🧠 A IA está ouvindo a ligação..."):
                         audio_enviado = genai.upload_file(path=caminho_temp)
                         
-                        # --- PROMPT BLINDADO ---
                         prompt = """
                         Você é um Analista de Qualidade Sênior do Service Desk da FindUP, focado no cliente Leo Madeiras.
                         Ouça a gravação anexada com extremo rigor técnico e forneça um relatório estruturado.
-                        REGRA DE OURO: Nunca invente ou suponha informações. Baseie-se APENAS no que foi dito claramente no áudio.
+                        
+                        REGRAS DE OURO: 
+                        1. Nunca invente ou suponha informações. 
+                        2. MESMO QUE O ÁUDIO SEJA APENAS MÚSICA, SILÊNCIO OU INAUDÍVEL, VOCÊ DEVE OBRIGATORIAMENTE RETORNAR O RELATÓRIO PREENCHIDO INFORMANDO ISSO. NUNCA DEIXE A RESPOSTA EM BRANCO.
 
-                        1. **🧑‍💻 Analista Responsável:** Identifique o nome do atendente. ATENÇÃO: Só escreva um nome se você escutar CLARAMENTE na saudação (ex: "FindUP, [Nome] bom dia"). É estritamente proibido inventar nomes. Se o nome for inaudível, se a pessoa falar embolado ou se você não tiver certeza absoluta, escreva EXATAMENTE: "Não identificado".
+                        1. **🧑‍💻 Analista Responsável:** Identifique o nome do atendente. Só escreva um nome se você escutar CLARAMENTE na saudação. É proibido inventar nomes. Se inaudível, escreva: "Não identificado".
                         2. **📝 Contexto da Ligação:** Qual foi o problema, dúvida ou solicitação do usuário?
                         3. **🎫 Registro (Ticket):** O analista repassou algum número de chamado ou incidente? Se sim, coloque em negrito. Se não, escreva "Nenhum número repassado".
-                        4. **🌡️ Termômetro de Sentimento:** O cliente estava Satisfeito, Neutro ou Frustrado/Irritado? (Identifique palavras de alerta como: demora, muito tempo, ruim, inaceitável, urgente, travado, prejuízo). Justifique.
-                        5. **✅ Desfecho da Chamada:** Como foi finalizado? O problema foi resolvido em linha (FCR) ou escalonado para outra equipe?
+                        4. **🌡️ Termômetro de Sentimento:** O cliente estava Satisfeito, Neutro ou Frustrado/Irritado? Justifique.
+                        5. **✅ Desfecho da Chamada:** Como foi finalizado? Resolvido em linha (FCR) ou escalonado para outra equipe?
                         """
                         
                         model = genai.GenerativeModel(NOME_MODELO)
                         response = model.generate_content([audio_enviado, prompt])
+                        
+                        # --- O CINTO DE SEGURANÇA ---
+                        try:
+                            relatorio_final = response.text
+                        except ValueError:
+                            # Se a IA tentar devolver em branco ou bloquear por segurança, ele avisa bonitinho em vez de quebrar
+                            motivo = response.candidates[0].finish_reason if response.candidates else "Desconhecido"
+                            relatorio_final = f"⚠️ **A IA não conseguiu gerar o texto para este áudio.**\n\nIsso geralmente acontece se o áudio estiver completamente mudo, corrompido, ou se a IA bloqueou a transcrição por conter dados muito sensíveis (Filtro de Segurança). Código do bloqueio: {motivo}"
                         
                         genai.delete_file(audio_enviado.name)
                         os.remove(caminho_temp)
@@ -129,7 +139,7 @@ try:
                 with coluna_direita:
                     st.success("Auditoria concluída com sucesso!")
                     st.markdown("### 📋 Ficha de Monitoria (QA)")
-                    st.markdown(response.text)
+                    st.markdown(relatorio_final) # Agora usamos a variável com cinto de segurança
 
 except Exception as e:
     st.error(f"Erro no sistema: {e}")
