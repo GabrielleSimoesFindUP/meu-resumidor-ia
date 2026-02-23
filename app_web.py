@@ -115,7 +115,7 @@ try:
                         1. Nunca invente ou suponha informações. 
                         2. MESMO QUE O ÁUDIO SEJA APENAS MÚSICA, SILÊNCIO OU INAUDÍVEL, VOCÊ DEVE OBRIGATORIAMENTE RETORNAR O RELATÓRIO PREENCHIDO INFORMANDO ISSO. NUNCA DEIXE A RESPOSTA EM BRANCO.
 
-                        1. **🧑‍💻 Analista Responsável:** Identifique o nome do atendente. Só escreva um nome se você escutar CLARAMENTE na saudação. É proibido inventar nomes. Se inaudível, escreva: "Não identificado".
+                        1. **🧑‍💻 Analista Responsável:** Identifique o nome do atendente. ATENÇÃO MÁXIMA: O roteiro de saudação utilizado pela FindUP nos primeiros segundos de áudio é "Leo madeiras, [NOME DO ANALISTA], bom dia/boa tarde/boa noite". Concentre-se no início da gravação, encontre essa frase e extraia exatamente o nome que foi dito. Se a pessoa falar muito rápido ou o áudio estiver ruim e você não tiver certeza absoluta, escreva: "Não identificado".
                         2. **📝 Contexto da Ligação:** Qual foi o problema, dúvida ou solicitação do usuário?
                         3. **🎫 Registro (Ticket):** O analista repassou algum número de chamado ou incidente? Se sim, coloque em negrito. Se não, escreva "Nenhum número repassado".
                         4. **🌡️ Termômetro de Sentimento:** O cliente estava Satisfeito, Neutro ou Frustrado/Irritado? Justifique.
@@ -143,3 +143,4 @@ try:
 
 except Exception as e:
     st.error(f"Erro no sistema: {e}")
+
