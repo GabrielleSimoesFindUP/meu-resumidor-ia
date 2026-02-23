@@ -11,7 +11,7 @@ from googleapiclient.http import MediaIoBaseDownload
 # --- CONFIGURAÇÕES GERAIS ---
 genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
 # Usando o modelo PRO para ter a audição máxima em áudios difíceis e baixos:
-NOME_MODELO = 'models/gemini-2.5-pro'
+NOME_MODELO = 'models/gemini-2.5-flash'
 
 # 🛑 O ID DA SUA PASTA DO DRIVE:
 ID_DA_PASTA = "1nCR3mW_pL57XGIX4R2N6NzrMv6ljK_ce"
@@ -145,4 +145,5 @@ try:
 
 except Exception as e:
     st.error(f"Erro no sistema: {e}")
+
 
