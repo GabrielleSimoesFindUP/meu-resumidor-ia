@@ -107,7 +107,7 @@ try:
                     with st.spinner("🧠 A IA está ouvindo a ligação..."):
                         audio_enviado = genai.upload_file(path=caminho_temp)
                         
-                       prompt = """
+                        prompt = """
                         Você é um Analista de Qualidade Sênior do Service Desk da FindUP, focado no cliente Leo Madeiras.
                         Ouça a gravação anexada com extremo rigor técnico e forneça um relatório estruturado.
                         
@@ -126,11 +126,9 @@ try:
                         model = genai.GenerativeModel(NOME_MODELO)
                         response = model.generate_content([audio_enviado, prompt])
                         
-                        # --- O CINTO DE SEGURANÇA ---
                         try:
                             relatorio_final = response.text
                         except ValueError:
-                            # Se a IA tentar devolver em branco ou bloquear por segurança, ele avisa bonitinho em vez de quebrar
                             motivo = response.candidates[0].finish_reason if response.candidates else "Desconhecido"
                             relatorio_final = f"⚠️ **A IA não conseguiu gerar o texto para este áudio.**\n\nIsso geralmente acontece se o áudio estiver completamente mudo, corrompido, ou se a IA bloqueou a transcrição por conter dados muito sensíveis (Filtro de Segurança). Código do bloqueio: {motivo}"
                         
@@ -140,9 +138,7 @@ try:
                 with coluna_direita:
                     st.success("Auditoria concluída com sucesso!")
                     st.markdown("### 📋 Ficha de Monitoria (QA)")
-                    st.markdown(relatorio_final) # Agora usamos a variável com cinto de segurança
+                    st.markdown(relatorio_final)
 
 except Exception as e:
     st.error(f"Erro no sistema: {e}")
-
-
