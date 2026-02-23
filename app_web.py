@@ -1,98 +1,104 @@
 import streamlit as st
-import whisper
 import google.generativeai as genai
 import os
+import tempfile
+import json
+import io
+from google.oauth2 import service_account
+from googleapiclient.discovery import build
+from googleapiclient.http import MediaIoBaseDownload
 
-# --- CONFIGURAÇÕES ---
-# Coloque sua chave aqui
+# --- CONFIGURAÇÕES GERAIS ---
 genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
 NOME_MODELO = 'models/gemini-2.5-flash'
 
-# Cache para não precisar carregar o Whisper toda vez que apertar o botão
+# 🛑 COLE O ID DA SUA PASTA DO DRIVE AQUI:
+ID_DA_PASTA = "COLE_O_ID_DA_PASTA_AQUI"
+
+# --- FUNÇÕES DO GOOGLE DRIVE ---
 @st.cache_resource
-def carregar_whisper():
-    return whisper.load_model("tiny")
+def conectar_drive():
+    # Lê a chave do robô que guardamos no cofre do Streamlit
+    cred_json = st.secrets["GOOGLE_CREDENTIALS_JSON"]
+    cred_dict = json.loads(cred_json)
+    creds = service_account.Credentials.from_service_account_info(
+        cred_dict, scopes=['https://www.googleapis.com/auth/drive.readonly']
+    )
+    return build('drive', 'v3', credentials=creds)
+
+def listar_arquivos_drive(service):
+    # Procura apenas arquivos de áudio dentro da pasta especificada
+    query = f"'{ID_DA_PASTA}' in parents and trashed=false and mimeType contains 'audio/'"
+    resultados = service.files().list(q=query, fields="files(id, name)").execute()
+    return resultados.get('files', [])
+
+def baixar_audio_drive(service, file_id):
+    request = service.files().get_media(fileId=file_id)
+    fh = io.BytesIO()
+    downloader = MediaIoBaseDownload(fh, request)
+    done = False
+    while not done:
+        status, done = downloader.next_chunk()
+    fh.seek(0)
+    return fh.read()
 
 # --- INTERFACE WEB ---
-st.title("🎙️ Analisador de Chamadas com IA")
-st.write("Faça o upload da gravação e receba o relatório detalhado automaticamente.")
+st.title("☁️ Auditoria Automática - FindUP")
+st.write("Selecione uma ligação diretamente do seu Google Drive para análise.")
 
-# Botão de Upload
-arquivo_audio = st.file_uploader("Selecione o áudio (.wav, .mp3, .m4a)", type=["wav", "mp3", "m4a"])
-
-if arquivo_audio is not None:
-    # Mostra um player de áudio na tela para você poder ouvir!
-    st.audio(arquivo_audio)
+try:
+    # Conecta no Drive e lista os arquivos
+    service = conectar_drive()
+    arquivos = listar_arquivos_drive(service)
     
-    if st.button("Gerar Relatório Analítico"):
-        
-        # Cria uma mensagem de carregamento bonita
-        with st.spinner("Ouvindo o áudio e gerando o relatório... Isso pode levar um minutinho!"):
-            try:
-                # 1. Salvar o arquivo temporariamente para o Whisper conseguir ler
-                caminho_temp = "audio_temporario." + arquivo_audio.name.split('.')[-1]
-                with open(caminho_temp, "wb") as f:
-                    f.write(arquivo_audio.getbuffer())
+    if not arquivos:
+        st.warning("Nenhum arquivo de áudio encontrado na pasta do Drive.")
+    else:
+        # Cria um menu (dropdown) com os nomes dos arquivos
+        opcoes = {arq['name']: arq['id'] for arq in arquivos}
+        nome_selecionado = st.selectbox("Selecione a gravação (Leo Madeiras):", ["-- Escolha uma gravação --"] + list(opcoes.keys()))
+
+        if nome_selecionado != "-- Escolha uma gravação --":
+            
+            if st.button("Puxar do Drive e Analisar"):
+                file_id = opcoes[nome_selecionado]
                 
-                # 2. Transcrição com Whisper
-                model_w = carregar_whisper()
-                result = model_w.transcribe(caminho_temp)
-                
-                # Pegando os tempos (o mesmo código que já funcionou pra você!)
-                transcricao_com_tempo = ""
-                for segmento in result["segments"]:
-                    inicio = int(segmento["start"])
-                    fim = int(segmento["end"])
-                    transcricao_com_tempo += f"[{inicio}s - {fim}s]: {segmento['text']}\n"
+                with st.spinner("📥 Baixando áudio do Google Drive..."):
+                    conteudo_audio = baixar_audio_drive(service, file_id)
                     
-                tempo_total = int(result["segments"][-1]["end"]) if result["segments"] else 0
-                minutos, segundos = tempo_total // 60, tempo_total % 60
-                tempo_formatado = f"{minutos}m {segundos}s"
+                    # Identifica a extensão do arquivo (.mp3, .wav)
+                    extensao = os.path.splitext(nome_selecionado)[1]
+                    if not extensao: extensao = ".mp3"
+                    
+                    with tempfile.NamedTemporaryFile(delete=False, suffix=extensao) as tmp:
+                        tmp.write(conteudo_audio)
+                        caminho_temp = tmp.name
+                        
+                with st.spinner("🧠 Analisando com a IA do Google..."):
+                    audio_enviado = genai.upload_file(path=caminho_temp)
+                    
+                    prompt = """
+                    Você é um Analista de Qualidade Sênior do Service Desk da FindUP, responsável por auditar atendimentos do cliente Leo Madeiras.
+                    Ouça a gravação anexada com rigor técnico.
+                    
+                    Forneça um relatório detalhado com os seguintes tópicos:
 
-                # 3. Resumo com Gemini
-                model_g = genai.GenerativeModel(NOME_MODELO)
-                
-                prompt = f"""
-                Você é um Analista de Qualidade Sênior do Service Desk da FindUP, responsável por auditar os atendimentos prestados ao cliente Leo Madeiras.
-                Analise a transcrição de áudio abaixo com rigor técnico. Cada linha possui o tempo em segundos [Início - Fim].
-                Duração total da chamada: {tempo_formatado} ({tempo_total} segundos).
+                    1. **Contexto da Ligação:** Qual foi o problema, dúvida ou solicitação?
+                    2. **Registro (Ticket):** O analista repassou algum número de chamado/incidente? Se sim, coloque em negrito. Se não, escreva "Nenhum número repassado".
+                    3. **Termômetro de Sentimento:** Satisfeito, Neutro ou Frustrado? (Identifique palavras de alerta como: demora, muito tempo, ruim, inaceitável, urgente, travado, prejuízo).
+                    4. **Desfecho da Chamada:** Como foi finalizado? Resolvido em linha ou escalonado?
+                    """
+                    
+                    model = genai.GenerativeModel(NOME_MODELO)
+                    response = model.generate_content([audio_enviado, prompt])
+                    
+                    st.success("Auditoria concluída com sucesso!")
+                    st.markdown("### 📊 Relatório FindUP")
+                    st.markdown(response.text)
+                    
+                    # Limpeza
+                    genai.delete_file(audio_enviado.name)
+                    os.remove(caminho_temp)
 
-                Forneça um relatório detalhado, estruturado e direto ao ponto com os seguintes tópicos:
-
-                1. **Contexto da Ligação:** Qual foi o problema, dúvida ou solicitação relatada pelo usuário da Leo Madeiras?
-                
-                2. **Registro (Ticket):** O analista repassou algum número de chamado, incidente, requisição, ticket ou protocolo para o usuário? 
-                   - Se SIM, informe o número exato em negrito. 
-                   - Se NÃO, escreva explicitamente: "Nenhum número de chamado foi repassado na gravação".
-                
-                3. **Termômetro de Sentimento do Cliente:** O cliente demonstrou estar Satisfeito, Neutro ou Frustrado/Irritado? 
-                   - Identifique ativamente se o cliente usou palavras de alerta como: "demora", "muito tempo", "esperando", "atendimento ruim", "péssimo", "inaceitável", "absurdo", "urgente", "estou parado", "de novo", "ninguém resolve", "prejuízo", "loja cheia", "travado" ou similares.
-                   - Justifique a sua escolha citando trechos ou o tom geral da conversa.
-                
-                4. **Desfecho da Chamada:** Como o atendimento foi finalizado? O problema foi resolvido em linha (First Call Resolution) ou foi escalonado/encaminhado para outra equipe?
-                
-                5. **Métricas de Tempo:**
-                   - Tempo estimado na URA/Fila de espera:
-                   - Tempo estimado de conversa com o analista humano:
-                   - Tempo total da gravação: {tempo_formatado}
-
-                Transcrição da chamada:
-                {transcricao_com_tempo}
-                """
-                
-                response = model_g.generate_content(prompt)
-                
-                # 4. Mostrar o resultado na tela
-                st.success("Relatório gerado com sucesso!")
-                
-                # Mostra o texto formatado bonitinho na página web
-                st.markdown("### 📊 Resultado da Análise")
-                st.markdown(response.text)
-                
-                # Apaga o arquivo temporário por organização
-                os.remove(caminho_temp)
-                
-            except Exception as e:
-
-                st.error(f"Ops! Ocorreu um erro: {e}")
-
+except Exception as e:
+    st.error(f"Erro de conexão com o Drive: {e}")
