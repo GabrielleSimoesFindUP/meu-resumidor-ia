@@ -107,20 +107,22 @@ try:
                     with st.spinner("🧠 A IA está ouvindo a ligação..."):
                         audio_enviado = genai.upload_file(path=caminho_temp)
                         
-                        prompt = """
+                       prompt = """
                         Você é um Analista de Qualidade Sênior do Service Desk da FindUP, focado no cliente Leo Madeiras.
                         Ouça a gravação anexada com extremo rigor técnico e forneça um relatório estruturado.
                         
+                        🚨 ALERTA CRÍTICO DE AUDIÇÃO: A gravação possui um longo tempo de espera na URA ("Sua chamada é a número..."). O analista humano VAI falar depois da URA, mas a voz dele pode estar MUITO BAIXA em comparação com a música. Você DEVE ouvir o áudio inteiro até o último segundo e focar ao máximo para captar a voz humana, ignorando a repetição da URA.
+
                         REGRAS DE OURO: 
                         1. Nunca invente ou suponha informações. 
-                        2. MESMO QUE O ÁUDIO SEJA APENAS MÚSICA, SILÊNCIO OU INAUDÍVEL, VOCÊ DEVE OBRIGATORIAMENTE RETORNAR O RELATÓRIO PREENCHIDO INFORMANDO ISSO. NUNCA DEIXE A RESPOSTA EM BRANCO.
+                        2. Procure ativamente pela voz baixa do analista após a URA.
 
-                        1. **⏱️ Início do Atendimento:** Informe o tempo exato da gravação (em minutos e segundos, ex: 01:45) em que a música de espera ou URA termina e o analista humano começa a falar.
-                        2. **🧑‍💻 Analista Responsável:** Identifique o nome do atendente. ATENÇÃO MÁXIMA: O roteiro de saudação utilizado pela FindUP logo após o fim da espera é "Leo madeiras, [NOME DO ANALISTA], bom dia/boa tarde/boa noite". Concentre-se no momento em que o atendimento humano inicia, encontre essa frase e extraia exatamente o nome que foi dito. Se inaudível, escreva: "Não identificado".
+                        1. **⏱️ Início do Atendimento:** Informe o tempo exato da gravação (em minutos e segundos) em que a URA termina e o analista humano começa a falar (mesmo que a voz esteja baixa).
+                        2. **🧑‍💻 Analista Responsável:** Identifique o nome do atendente. O roteiro é "Leo madeiras, [NOME DO ANALISTA], bom dia/boa tarde/boa noite". Ele fala o nome duas vezes. Preste muita atenção na voz baixa e extraia o nome. Se totalmente inaudível, escreva: "Não identificado".
                         3. **📝 Contexto da Ligação:** Qual foi o problema, dúvida ou solicitação do usuário?
-                        4. **🎫 Registro (Ticket):** O analista repassou algum número de chamado ou incidente? Se sim, coloque em negrito. Se não, escreva "Nenhum número repassado".
+                        4. **🎫 Registro (Ticket):** O analista repassou algum número de chamado ou incidente? Se sim, coloque em negrito.
                         5. **🌡️ Termômetro de Sentimento:** O cliente estava Satisfeito, Neutro ou Frustrado/Irritado? Justifique.
-                        6. **✅ Desfecho da Chamada:** Como foi finalizado? Resolvido em linha (FCR) ou escalonado para outra equipe?
+                        6. **✅ Desfecho da Chamada:** Como foi finalizado? Resolvido em linha (FCR) ou escalonado?
                         """
                         
                         model = genai.GenerativeModel(NOME_MODELO)
@@ -142,3 +144,4 @@ try:
 
 except Exception as e:
     st.error(f"Erro no sistema: {e}")
+
