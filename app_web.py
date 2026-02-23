@@ -86,49 +86,65 @@ try:
         opcoes = {arq['name']: arq['id'] for arq in arquivos}
         nome_selecionado = st.selectbox("Selecione a gravação (Leo Madeiras):", ["-- Escolha uma gravação --"] + list(opcoes.keys()))
 
-        if nome_selecionado != "-- Escolha uma gravação --":
+if nome_selecionado != "-- Escolha uma gravação --":
             
-            if st.button("Puxar do Drive e Analisar"):
-                file_id = opcoes[nome_selecionado]
-                
-                with st.spinner("📥 Baixando áudio do Google Drive..."):
-                    conteudo_audio = baixar_audio_drive(service, file_id)
+            # Divide a tela em duas colunas com larguras iguais
+            coluna_esquerda, coluna_direita = st.columns(2)
+            
+            with coluna_esquerda:
+                st.markdown("### 🎵 Gravação Selecionada")
+                st.info(f"Arquivo: **{nome_selecionado}**")
+                btn_analisar = st.button("▶️ Ouvir e Analisar com IA", use_container_width=True)
+            
+            # Quando o botão for apertado, a mágica acontece
+            if btn_analisar:
+                with coluna_esquerda: # Mantém os avisos de carregamento na esquerda
+                    file_id = opcoes[nome_selecionado]
                     
-                    # Identifica a extensão do arquivo (.mp3, .wav)
-                    extensao = os.path.splitext(nome_selecionado)[1]
-                    if not extensao: extensao = ".mp3"
-                    
-                    with tempfile.NamedTemporaryFile(delete=False, suffix=extensao) as tmp:
-                        tmp.write(conteudo_audio)
-                        caminho_temp = tmp.name
+                    with st.spinner("📥 Baixando áudio do Google Drive..."):
+                        conteudo_audio = baixar_audio_drive(service, file_id)
                         
-                with st.spinner("🧠 Analisando com a IA do Google..."):
-                    audio_enviado = genai.upload_file(path=caminho_temp)
-                    
-                    prompt = """
-                    Você é um Analista de Qualidade Sênior do Service Desk da FindUP, responsável por auditar atendimentos do cliente Leo Madeiras.
-                    Ouça a gravação anexada com rigor técnico.
-                    
-                    Forneça um relatório detalhado com os seguintes tópicos:
+                        extensao = os.path.splitext(nome_selecionado)[1]
+                        if not extensao: extensao = ".mp3"
+                        
+                        with tempfile.NamedTemporaryFile(delete=False, suffix=extensao) as tmp:
+                            tmp.write(conteudo_audio)
+                            caminho_temp = tmp.name
+                        
+                        # Mostra o player para você poder ouvir o áudio também!
+                        st.audio(conteudo_audio, format=f"audio/{extensao.replace('.', '')}")
+                            
+                    with st.spinner("🧠 A IA está ouvindo a ligação..."):
+                        audio_enviado = genai.upload_file(path=caminho_temp)
+                        
+                        # --- O NOVO PROMPT EXIGINDO O NOME DO ANALISTA ---
+                        prompt = """
+                        Você é um Analista de Qualidade Sênior do Service Desk da FindUP, focado no cliente Leo Madeiras.
+                        Ouça a gravação anexada com rigor técnico e forneça um relatório estruturado:
 
-                    1. **Contexto da Ligação:** Qual foi o problema, dúvida ou solicitação?
-                    2. **Registro (Ticket):** O analista repassou algum número de chamado/incidente? Se sim, coloque em negrito. Se não, escreva "Nenhum número repassado".
-                    3. **Termômetro de Sentimento:** Satisfeito, Neutro ou Frustrado? (Identifique palavras de alerta como: demora, muito tempo, ruim, inaceitável, urgente, travado, prejuízo).
-                    4. **Desfecho da Chamada:** Como foi finalizado? Resolvido em linha ou escalonado?
-                    """
-                    
-                    model = genai.GenerativeModel(NOME_MODELO)
-                    response = model.generate_content([audio_enviado, prompt])
-                    
+                        1. **🧑‍💻 Analista Responsável:** Identifique o nome do atendente que realizou o suporte (preste atenção na saudação inicial, ex: "FindUP, [Nome] bom dia"). Se não for possível escutar o nome, escreva "Não identificado".
+                        2. **📝 Contexto da Ligação:** Qual foi o problema, dúvida ou solicitação do usuário?
+                        3. **🎫 Registro (Ticket):** O analista repassou algum número de chamado ou incidente? Se sim, coloque em negrito. Se não, escreva "Nenhum número repassado".
+                        4. **🌡️ Termômetro de Sentimento:** O cliente estava Satisfeito, Neutro ou Frustrado/Irritado? (Identifique palavras de alerta como: demora, muito tempo, ruim, inaceitável, urgente, travado, prejuízo). Justifique.
+                        5. **✅ Desfecho da Chamada:** Como foi finalizado? O problema foi resolvido em linha (FCR) ou escalonado para outra equipe?
+                        """
+                        
+                        model = genai.GenerativeModel(NOME_MODELO)
+                        response = model.generate_content([audio_enviado, prompt])
+                        
+                        # Limpeza dos arquivos temporários
+                        genai.delete_file(audio_enviado.name)
+                        os.remove(caminho_temp)
+                
+                # Joga o resultado pronto na coluna da direita!
+                with coluna_direita:
                     st.success("Auditoria concluída com sucesso!")
-                    st.markdown("### 📊 Relatório FindUP")
+                    st.markdown("### 📋 Ficha de Monitoria (QA)")
                     st.markdown(response.text)
-                    
-                    # Limpeza
-                    genai.delete_file(audio_enviado.name)
-                    os.remove(caminho_temp)
+
 
 except Exception as e:
     st.error(f"Erro de conexão com o Drive: {e}")
+
 
 
