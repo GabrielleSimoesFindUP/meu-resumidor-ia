@@ -116,16 +116,18 @@ try:
                     with st.spinner("🧠 A IA está ouvindo a ligação..."):
                         audio_enviado = genai.upload_file(path=caminho_temp)
                         
-                        # --- O NOVO PROMPT EXIGINDO O NOME DO ANALISTA ---
+                                       # --- O NOVO PROMPT BLINDADO CONTRA ALUCINAÇÕES ---
                         prompt = """
                         Você é um Analista de Qualidade Sênior do Service Desk da FindUP, focado no cliente Leo Madeiras.
-                        Ouça a gravação anexada com rigor técnico e forneça um relatório estruturado:
+                        Ouça a gravação anexada com extremo rigor técnico e forneça um relatório estruturado.
+                        REGRA DE OURO: Nunca invente ou suponha informações. Baseie-se APENAS no que foi dito claramente no áudio.
 
-                        1. **🧑‍💻 Analista Responsável:** Identifique o nome do atendente que realizou o suporte (preste atenção na saudação inicial, ex: "FindUP, [Nome] bom dia"). Se não for possível escutar o nome, escreva "Não identificado".
+                        1. **🧑‍💻 Analista Responsável:** Identifique o nome do atendente. ATENÇÃO: Só escreva um nome se você escutar CLARAMENTE na saudação (ex: "FindUP, [Nome] bom dia"). É estritamente proibido inventar nomes. Se o nome for inaudível, se a pessoa falar embolado ou se você não tiver certeza absoluta, escreva EXATAMENTE: "Não identificado".
                         2. **📝 Contexto da Ligação:** Qual foi o problema, dúvida ou solicitação do usuário?
                         3. **🎫 Registro (Ticket):** O analista repassou algum número de chamado ou incidente? Se sim, coloque em negrito. Se não, escreva "Nenhum número repassado".
                         4. **🌡️ Termômetro de Sentimento:** O cliente estava Satisfeito, Neutro ou Frustrado/Irritado? (Identifique palavras de alerta como: demora, muito tempo, ruim, inaceitável, urgente, travado, prejuízo). Justifique.
                         5. **✅ Desfecho da Chamada:** Como foi finalizado? O problema foi resolvido em linha (FCR) ou escalonado para outra equipe?
+                        """Desfecho da Chamada:** Como foi finalizado? O problema foi resolvido em linha (FCR) ou escalonado para outra equipe?
                         """
                         
                         model = genai.GenerativeModel(NOME_MODELO)
@@ -144,3 +146,4 @@ try:
 # O bendito "except" que tinha sumido:
 except Exception as e:
     st.error(f"Erro no sistema: {e}")
+
