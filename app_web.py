@@ -112,14 +112,14 @@ try:
                         Você é um Analista de Qualidade Sênior do Service Desk da FindUP, focado no cliente Leo Madeiras.
                         Ouça a gravação anexada com extremo rigor técnico e forneça um relatório estruturado.
                         
-                        🚨 ALERTA CRÍTICO DE AUDIÇÃO: A gravação possui um longo tempo de espera na URA. O analista humano VAI falar depois da URA, mas a voz dele pode estar MUITO BAIXA em comparação com a música. Você DEVE ouvir o áudio inteiro até o último segundo e focar ao máximo para captar a voz humana, ignorando a repetição da URA.
+                        🚨 ALERTA CRÍTICO DE AUDIÇÃO: A gravação possui um longo tempo de espera na URA. O analista humano VAI falar depois da URA, mas a voz dele pode estar MUITO BAIXA em comparação com a música. Você DEVE ouvir o áudio inteiro e focar ao máximo para captar a voz humana.
 
                         REGRAS DE OURO: 
                         1. Nunca invente ou suponha informações. 
                         2. Procure ativamente pela voz baixa do analista após a URA.
 
-                        1. **⏱️ Início do Atendimento:** Informe o tempo exato da gravação (em minutos e segundos) em que a URA termina e o analista humano começa a falar (mesmo que a voz esteja baixa).
-                        2. **🧑‍💻 Analista Responsável:** Identifique o nome do atendente. O roteiro é "Leo madeiras, [NOME DO ANALISTA], bom dia/boa tarde/boa noite". Ele fala o nome duas vezes. Preste muita atenção na voz baixa e extraia o nome. Se totalmente inaudível, escreva: "Não identificado".
+                        1. **⏱️ Início do Atendimento:** Para não errar o tempo, faça o seguinte: cite qual foi a ÚLTIMA frase da URA, e logo em seguida informe o tempo EXATO (minutos e segundos, ex: 02:15) em que o analista humano começou a falar.
+                        2. **🧑‍💻 Analista Responsável:** Identifique o nome do atendente. O roteiro é "Leo madeiras, [NOME DO ANALISTA], bom dia/boa tarde". Ele fala o nome duas vezes. Extraia o nome da voz baixa. Se inaudível, escreva: "Não identificado".
                         3. **📝 Contexto da Ligação:** Qual foi o problema, dúvida ou solicitação do usuário?
                         4. **🎫 Registro (Ticket):** O analista repassou algum número de chamado ou incidente? Se sim, coloque em negrito.
                         5. **🌡️ Termômetro de Sentimento:** O cliente estava Satisfeito, Neutro ou Frustrado/Irritado? Justifique.
@@ -145,5 +145,6 @@ try:
 
 except Exception as e:
     st.error(f"Erro no sistema: {e}")
+
 
 
